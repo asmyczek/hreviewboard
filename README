@@ -1,6 +1,6 @@
 DESCRIPTION
 
-Haskell bindings to ReviewBoard (http://code.google.com/p/reviewboard/)
+Haskell bindings for ReviewBoard (http://code.google.com/p/reviewboard/)
 
 From the ReviewBoard project page:
 "Review Board is a web-based tool designed to help projects and companies 
@@ -8,16 +8,15 @@ From the ReviewBoard project page:
  and time-consuming..."
 
 This package contains:
-- The WebAPI binding to ReviewBoard.
-- Sample command line tools mkrr and rbpatch demonstrating the usage 
+- The WebAPI binding for ReviewBoard.
+- Two example command line tools mkrr and rbpatch demonstrating the usage 
   of the bindings. 
-  -  Using 'mkrr' new review requests can be submitted 
-     from the local repository copy as simple as:
-        svn diff | mkrr -r [reviewers]
+  -  'mkrr' creates a new review requests from the local repository using 
+     svn diff | mkrr -r [reviewers] command.
   - 'rbpatch' applies patches to local repository from a review request diff.
-  For details see the tools haddock documentation.
+  For details see the haddock documentation.
 
-Implemented and tested using ReviewBoard 1.0 Beta (4/25/2008).
+Implemented for ReviewBoard 1.0 Beta (4/25/2008).
 
 
 REQUIREMENTS
@@ -39,6 +38,7 @@ INSTALLATION
 
 CHANGES
 
+0.2.3   - Small fixes, moving to git and github.
 0.2.2   - Added support for plain http server requests, httpGet and httpPost
         - Changed get and post request methods to apiGet and apiPost
         - Added rbpatch, an example command line tool that applies patches 

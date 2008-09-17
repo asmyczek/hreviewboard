@@ -5,6 +5,7 @@ Description:    	Haskell bindings to ReviewBoard (<http://code.google.com/p/revi
 Author:         	Adam Smyczek
 Maintainer:     	<adam.smyczek@gmail.com>
 Category:       	Development
+Homepage:           http://github.com/smitti/hreviewboard/tree/master
 License:        	BSD3
 License-file:   	LICENSE
 Cabal-Version:  	>= 1.2

@@ -1,0 +1,31 @@
+name: ReviewBoard
+version: 0.2.2
+license: BSD3
+copyright:
+maintainer: <adam.smyczek@gmail.com>
+stability:
+homepage:
+package-url:
+description: Haskell bindings to ReviewBoard (<http://code.google.com/p/reviewboard/>).
+category: Development
+author: Adam Smyczek
+exposed: True
+exposed-modules: ReviewBoard.Api ReviewBoard.Core
+                 ReviewBoard.Browser ReviewBoard.Response ReviewBoard.Request
+hidden-modules:
+import-dirs: /usr/local/lib/ReviewBoard-0.2.2/ghc-6.8.2
+library-dirs: /usr/local/lib/ReviewBoard-0.2.2/ghc-6.8.2
+hs-libraries: HSReviewBoard-0.2.2
+extra-libraries:
+extra-ghci-libraries:
+include-dirs:
+includes:
+depends: base-3.0.1.0 mtl-1.1.0.0 random-1.0.0.0 network-2.1.0.0
+         HTTP-3001.1.0 json-0.3.3 directory-1.0.0.0 process-1.0.0.0
+hugs-options:
+cc-options:
+ld-options:
+framework-dirs:
+frameworks:
+haddock-interfaces: /usr/local/share/doc/ReviewBoard-0.2.2/html/ReviewBoard.haddock
+haddock-html: /usr/local/share/doc/ReviewBoard-0.2.2/html

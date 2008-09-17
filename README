@@ -1,0 +1,56 @@
+DESCRIPTION
+
+Haskell bindings to ReviewBoard (http://code.google.com/p/reviewboard/)
+
+From the ReviewBoard project page:
+"Review Board is a web-based tool designed to help projects and companies 
+ keep track of pending code changes and make code reviews much less painful
+ and time-consuming..."
+
+This package contains:
+- The WebAPI binding to ReviewBoard.
+- Sample command line tools mkrr and rbpatch demonstrating the usage 
+  of the bindings. 
+  -  Using 'mkrr' new review requests can be submitted 
+     from the local repository copy as simple as:
+        svn diff | mkrr -r [reviewers]
+  - 'rbpatch' applies patches to local repository from a review request diff.
+  For details see the tools haddock documentation.
+
+Implemented and tested using ReviewBoard 1.0 Beta (4/25/2008).
+
+
+REQUIREMENTS
+
+- GHC (http://www.haskell.org/ghc/)
+- HTTP package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/HTTP-3001.0.4)
+- JSON package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/json-0.3.3)
+
+
+INSTALLATION
+
+1. Configure:
+    runhaskell Setup.lhs configure
+2. Compile:
+    runhaskell Setup.lhs build
+3. Install:
+    runhaskell Setup.lhs install (as root)
+
+
+CHANGES
+
+0.2.2   - Added support for plain http server requests, httpGet and httpPost
+        - Changed get and post request methods to apiGet and apiPost
+        - Added rbpatch, an example command line tool that applies patches 
+          from a review request diff to local repository
+        - Added summary flag to mkrr and support for publishing 
+
+0.2.1   - Change the method API calls are constructed (internal change)
+
+0.2     - More API calls are supported
+        - Changed RBResponse type to simplify response handling
+        - Added minimalistic DSL for handling JSON responses
+        - mkrr supports screenshot upload now (-S command line flag)
+
+0.1     - Initial implementation supports basic API calls to submit new review requests
+

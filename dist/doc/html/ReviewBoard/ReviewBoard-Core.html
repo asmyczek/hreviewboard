@@ -1,0 +1,954 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>ReviewBoard.Core</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>ReviewBoard-0.2.2: Haskell bindings to ReviewBoard</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>ReviewBoard.Core</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>adam.smyczek@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+><B
+>Contents</B
+></TD
+></TR
+><TR
+><TD
+><DL
+><DT
+><A HREF="#1"
+>RB action monad
+</A
+></DT
+><DT
+><A HREF="#2"
+>RB state 
+</A
+></DT
+><DT
+><A HREF="#3"
+>Response type
+</A
+></DT
+><DT
+><A HREF="#4"
+>Utils
+</A
+></DT
+></DL
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>The core module implements the base types and functions of the bindings.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ARBAction"
+>RBAction</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ArunRBAction"
+>runRBAction</A
+> ::  String -&gt; String -&gt; String -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a -&gt; IO (Either String a, <A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+>)</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AliftBA"
+>liftBA</A
+> ::  BrowserAction a -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ArunRequest"
+>runRequest</A
+> ::  <A HREF="ReviewBoard-Core.html#t%3ARBRequestType"
+>RBRequestType</A
+> -&gt; <A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+> -&gt; (<A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+> -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a) -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ARBRequestType"
+>RBRequestType</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3AAPI"
+>API</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AHTTP"
+>HTTP</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ARBState"
+>RBState</A
+>  = <A HREF="#v%3ARBState"
+>RBState</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3ArbUrl"
+>rbUrl</A
+> :: String</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3ArbUser"
+>rbUser</A
+> :: String</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3ArbSessionId"
+>rbSessionId</A
+> :: Maybe Cookie</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3ArbErrHandler"
+>rbErrHandler</A
+> :: String -&gt; IO ()</TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AsetErrorHandler"
+>setErrorHandler</A
+> :: (String -&gt; IO ()) -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AsetDebugHTTP"
+>setDebugHTTP</A
+> :: Bool -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ARBResponse"
+>RBResponse</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ARBok"
+>RBok</A
+> JSValue</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ARBerr"
+>RBerr</A
+> String</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AresponseToEither"
+>responseToEither</A
+> :: <A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+> -&gt; Either String JSValue</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmkApiURI"
+>mkApiURI</A
+> :: String -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> URI</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="1"
+>RB action monad
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3ARBAction"
+></A
+><B
+>RBAction</B
+> a </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+><P
+>The action monad, a state with error handler.
+</P
+><P
+><TT
+><A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TT
+> represents one ReviewBoard session that handles multiple API calls.
+ The RBAction runner <TT
+><A HREF="ReviewBoard-Core.html#v%3ArunRBAction"
+>runRBAction</A
+></TT
+> performs a login into the ReviewBoard server 
+ and initializes the session.  All session related parameters are stored in 
+ the <TT
+><A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+></TT
+> of the action.
+</P
+><P
+>Errors are handled in two ways:
+</P
+><UL
+><LI
+> Network related error are immediately thrown using ErrorT throwError.
+</LI
+><LI
+> ReviewRequest response errors are handled using the error handler defined 
+ in <TT
+><A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+></TT
+> (default print).
+</LI
+></UL
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:RBAction')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:RBAction" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Monad <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Functor <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>MonadIO <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>MonadState <A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+> <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>MonadError String <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3ArunRBAction"
+></A
+><B
+>runRBAction</B
+> ::  String -&gt; String -&gt; String -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a -&gt; IO (Either String a, <A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+>)</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Run for <TT
+><A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TT
+>, performs a login using provided URL, user 
+ and password parameters and executes the action. When login fails 
+ <TT
+><A HREF="ReviewBoard-Core.html#v%3ArunRBAction"
+>runRBAction</A
+></TT
+> returns immediately with an error.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AliftBA"
+></A
+><B
+>liftBA</B
+> ::  BrowserAction a -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Convenient lift for BrowserActions
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3ArunRequest"
+></A
+><B
+>runRequest</B
+> ::  <A HREF="ReviewBoard-Core.html#t%3ARBRequestType"
+>RBRequestType</A
+> -&gt; <A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+> -&gt; (<A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+> -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a) -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>The request runner, generates request from provided <TT
+><A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+></TT
+> parameter,
+ executes the requests and handles the response using the handler function.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3ARBRequestType"
+></A
+><B
+>RBRequestType</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Type of the request, Web API or default HTTP
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v%3AAPI"
+></A
+><B
+>API</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v%3AHTTP"
+></A
+><B
+>HTTP</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:RBRequestType')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:RBRequestType" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Show <A HREF="ReviewBoard-Core.html#t%3ARBRequestType"
+>RBRequestType</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="2"
+>RB state 
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3ARBState"
+></A
+><B
+>RBState</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>RB action state containing session related information.
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ARBState"
+></A
+><B
+>RBState</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ArbUrl"
+></A
+><B
+>rbUrl</B
+> :: String</TD
+><TD CLASS="rdoc"
+>ReviewBoard server URL
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ArbUser"
+></A
+><B
+>rbUser</B
+> :: String</TD
+><TD CLASS="rdoc"
+>Logged in user
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ArbSessionId"
+></A
+><B
+>rbSessionId</B
+> :: Maybe Cookie</TD
+><TD CLASS="rdoc"
+>Session id cookie retrieve from a successful login
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ArbErrHandler"
+></A
+><B
+>rbErrHandler</B
+> :: String -&gt; IO ()</TD
+><TD CLASS="rdoc"
+>Error handler, for example error or print
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:RBState')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:RBState" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>MonadState <A HREF="ReviewBoard-Core.html#t%3ARBState"
+>RBState</A
+> <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AsetErrorHandler"
+></A
+><B
+>setErrorHandler</B
+> :: (String -&gt; IO ()) -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Set error handler used for ReviewBoard error responses.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AsetDebugHTTP"
+></A
+><B
+>setDebugHTTP</B
+> :: Bool -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Enable/disable debug output for Browser module
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="3"
+>Response type
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3ARBResponse"
+></A
+><B
+>RBResponse</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Response type return by every API function
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ARBok"
+></A
+><B
+>RBok</B
+> JSValue</TD
+><TD CLASS="rdoc"
+>Successful response, contains JSON response object
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v%3ARBerr"
+></A
+><B
+>RBerr</B
+> String</TD
+><TD CLASS="rdoc"
+>Response error including error message including 
+   encoded response
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:RBResponse')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:RBResponse" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Eq <A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Show <A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AresponseToEither"
+></A
+><B
+>responseToEither</B
+> :: <A HREF="ReviewBoard-Core.html#t%3ARBResponse"
+>RBResponse</A
+> -&gt; Either String JSValue</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Convenient response converter
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="4"
+>Utils
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AmkApiURI"
+></A
+><B
+>mkApiURI</B
+> :: String -&gt; <A HREF="ReviewBoard-Core.html#t%3ARBAction"
+>RBAction</A
+> URI</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Create ReviewBoard specific URI for a Web API call URL.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.0.0.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

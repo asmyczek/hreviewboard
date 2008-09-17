@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>ReviewBoard.Response</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>ReviewBoard-0.2.2: Haskell bindings to ReviewBoard</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>ReviewBoard.Response</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>adam.smyczek@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+><B
+>Contents</B
+></TD
+></TR
+><TR
+><TD
+><DL
+><DT
+><A HREF="#1"
+>JSON response utils
+</A
+></DT
+><DT
+><A HREF="#2"
+>Basic Response DSL
+</A
+></DT
+></DL
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>This is an optional module that provides additional functionality
+ to simplify handling of ReviewBoard responses.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Ajs4name"
+>js4name</A
+> :: String -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Ajs4path"
+>js4path</A
+> :: [String] -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Ajs4spath"
+>js4spath</A
+> :: String -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Ajs2v"
+>js2v</A
+> :: JSON a =&gt; JSValue -&gt; a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Amkrb"
+>mkrb</A
+> :: JSON a =&gt; String -&gt; (JSValue -&gt; a)</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="1"
+>JSON response utils
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3Ajs4name"
+></A
+><B
+>js4name</B
+> :: String -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Get value for name from a JSObject or Nothing
+ if JSValue is not a JSObject
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3Ajs4path"
+></A
+><B
+>js4path</B
+> :: [String] -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Get JSValue for name path, for example
+ for JSON object '{ &quot;obj1&quot; : { &quot;str&quot; : &quot;test&quot; } }'
+ js4path [&quot;obj1&quot;, &quot;str&quot;] returns Just test
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3Ajs4spath"
+></A
+><B
+>js4spath</B
+> :: String -&gt; JSValue -&gt; Maybe JSValue</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Get JSValue for string path of the form
+ <TT
+>reviewrequests.5.delete</TT
+>. Dots inside a name
+ are not supported.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3Ajs2v"
+></A
+><B
+>js2v</B
+> :: JSON a =&gt; JSValue -&gt; a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Extract value from JSValue or throw error
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="2"
+>Basic Response DSL
+</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+><P
+>The DSL provides a function for most ReviewBoard JSObject members
+ that directly returns the value of the member. The function name is equivalent
+ to the name of the member element, for example values of a response:
+</P
+><PRE
+> { &quot;stat&quot;: &quot;fail&quot;, 
+   &quot;err&quot;: {
+     &quot;msg&quot;: &quot;You are not logged in&quot;, 
+     &quot;code&quot;: 103
+   }
+ }
+</PRE
+><P
+>may be accessed as following:
+</P
+><PRE
+> (msg . err) response
+ -- returns 'You are not logged in' :: String
+</PRE
+><PRE
+> (code . err) response
+ -- returns 103 :: Integer
+</PRE
+><P
+>If the entry name represented by the function does not exist,
+ an error is thrown.
+</P
+><P
+>The current function list is build by screen scraping ReviewBoard
+ source code, so it's likely that some elements are missing. 
+ The missing function can be added using <TT
+><A HREF="ReviewBoard-Response.html#v%3Amkrb"
+>mkrb</A
+></TT
+> function. 
+ Please drop me an email if you find one and I will include 
+ this in the next version.
+</P
+><P
+>This approach for handling responses may change if I find a way
+ to generate the DSL methods directly from ReviewBoard code.
+</P
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3Amkrb"
+></A
+><B
+>mkrb</B
+> :: JSON a =&gt; String -&gt; (JSValue -&gt; a)</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Constructor for DSL functions
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.0.0.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

@@ -1,0 +1,467 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>ReviewBoard.Browser</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>ReviewBoard-0.2.2: Haskell bindings to ReviewBoard</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>ReviewBoard.Browser</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>adam.smyczek@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+><P
+>ReviewBoard.Browser extends Network.Browser module
+ with support for <TT
+>multipart/form-data</TT
+> content type.
+</P
+><P
+>The package contains typed <TT
+><A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+></TT
+> and form variables <TT
+><A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TT
+>.
+ The content encryption type is automatically chosen based on the
+ type of the <TT
+><A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TT
+>. Currently <TT
+>multipart/form-data</TT
+>
+ encryption is used only if <TT
+><A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+></TT
+> contains a <TT
+><A HREF="ReviewBoard-Browser.html#v%3AfileUpload"
+>fileUpload</A
+></TT
+> variable. 
+ Otherwise the request falls back to the default Network.Browser 
+ encryption type.
+</P
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AForm"
+>Form</A
+>  = <A HREF="#v%3AForm"
+>Form</A
+> RequestMethod URI [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AFormVar"
+>FormVar</A
+> </TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AformToRequest"
+>formToRequest</A
+> :: <A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+> -&gt; BrowserAction Request</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AtextField"
+>textField</A
+> :: String -&gt; String -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AcheckBox"
+>checkBox</A
+> :: String -&gt; Bool -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AfileUpload"
+>fileUpload</A
+> :: String -&gt; FilePath -&gt; String -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AtoMap"
+>toMap</A
+> :: [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>] -&gt; [(String, String)]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AtoFormVar"
+>toFormVar</A
+> :: [(String, String)] -&gt; [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>]</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3AForm"
+></A
+><B
+>Form</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Typed form
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v%3AForm"
+></A
+><B
+>Form</B
+> RequestMethod URI [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>]</TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t%3AFormVar"
+></A
+><B
+>FormVar</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Typed form variable
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:FormVar')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:FormVar" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Show <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AformToRequest"
+></A
+><B
+>formToRequest</B
+> :: <A HREF="ReviewBoard-Browser.html#t%3AForm"
+>Form</A
+> -&gt; BrowserAction Request</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Form to request for typed form variables,
+ same as <TT
+><A HREF="ReviewBoard-Browser.html#v%3AformToRequest"
+>formToRequest</A
+></TT
+> in Network.Browser module.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AtextField"
+></A
+><B
+>textField</B
+> :: String -&gt; String -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Create text field variable
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AcheckBox"
+></A
+><B
+>checkBox</B
+> :: String -&gt; Bool -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Create checkbox variable
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AfileUpload"
+></A
+><B
+>fileUpload</B
+> :: String -&gt; FilePath -&gt; String -&gt; <A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Create file upload variable
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AtoMap"
+></A
+><B
+>toMap</B
+> :: [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>] -&gt; [(String, String)]</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Convert [FormVar] to Network.Browser FormVar, a (String, String) map
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v%3AtoFormVar"
+></A
+><B
+>toFormVar</B
+> :: [(String, String)] -&gt; [<A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+>]</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Opposite to toNBFormVar
+ Converts a String tuple to <TT
+><A HREF="ReviewBoard-Browser.html#t%3AFormVar"
+>FormVar</A
+></TT
+>
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.0.0.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

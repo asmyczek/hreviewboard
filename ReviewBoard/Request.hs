@@ -60,8 +60,8 @@ module ReviewBoard.Request (
     reviews,
     groups,
     group,
-    users,
     user,
+    users,
     set,
     file,
     line,
@@ -85,13 +85,10 @@ module ReviewBoard.Request (
     ) where
 
 import Prelude hiding (all)
-import ReviewBoard.Browser
 import ReviewBoard.Core
-import Network.HTTP hiding (user)
 import Control.Monad.Trans
 import qualified Control.Monad.State as S
 import Data.Maybe
-import Network.URI
 
 -- ---------------------------------------------------------------------------
 -- URL path elements
@@ -120,13 +117,13 @@ replies                 = mkup "replies"
 draft                   = mkup "draft"
 diff                    = mkup "diff"
 screenshot              = mkup "screenshot"
+users                   = mkup "users"
 
 -- Path elements with optional parameter
 reviewrequests          = mkpup "reviewrequests" :: (Maybe Integer -> UrlPath -> UrlPath)
 reviews                 = mkpup "reviews"        :: (Maybe Integer -> UrlPath -> UrlPath)
 groups                  = mkpup "groups"         :: (Maybe String  -> UrlPath -> UrlPath)
 group                   = mkpup "group"          :: (Maybe String  -> UrlPath -> UrlPath)
-users                   = mkpup "users"          :: (Maybe String  -> UrlPath -> UrlPath)
 user                    = mkpup "user"           :: (Maybe String  -> UrlPath -> UrlPath)
 set                     = mkpup "set"            :: (Maybe RRField -> UrlPath -> UrlPath)
 file                    = mkpup "file"           :: (Maybe Integer -> UrlPath -> UrlPath)
@@ -176,30 +173,30 @@ instance Show RRField where
 -- | API GET request method
 --
 apiGet :: (UrlPath -> UrlPath) -> [FormVar] -> RBAction RBResponse
-apiGet u vs = mkApiURI (u "") >>= rbRequest API GET vs
+apiGet p fs = rbRequest API GET (p "") fs
 
 -- | API POST request method
 --
 apiPost :: (UrlPath -> UrlPath) -> [FormVar] -> RBAction RBResponse
-apiPost u vs = mkApiURI (u "") >>= rbRequest API POST vs
+apiPost p fs = rbRequest API POST (p "") fs
 
 -- | Fall back to default http request for the case an action is not supported 
 -- by the ReviewBoard WebAPI (HTTP GET)
 --
 httpGet :: String -> [FormVar] -> RBAction RBResponse
-httpGet u vs = mkHttpURI u >>= rbRequest HTTP GET vs
+httpGet = rbRequest HTTP GET
 
 -- | Same as 'httpGet' for HTTP POST requests
 --
 httpPost :: String -> [FormVar] -> RBAction RBResponse
-httpPost u vs = mkHttpURI u >>= rbRequest HTTP POST vs
+httpPost = rbRequest HTTP POST
 
 -- | Internal generalized request runner
 --
-rbRequest :: RBRequestType -> RequestMethod -> [FormVar] -> URI -> RBAction RBResponse
-rbRequest rt rm vs u = do
-    let form = Form rm u vs
-    runRequest rt form return
+rbRequest :: RBRequestType -> RBRequestMethod -> String -> [FormVar] -> RBAction RBResponse
+rbRequest rt rm u vs = do
+    let form = Form rt rm u vs
+    runRequest form defaultResponseHandler
 
 -- ---------------------------------------------------------------------------
 -- Util types and functions
@@ -216,9 +213,61 @@ mkup s = ((s ++ "/") ++)
 -- | Make path element with a parameter of type a e.g.
 -- reviewrequests (Just 5) => \"reviewrequests\/5\/\"
 --
-mkpup :: Show a => String -> (Maybe a -> UrlPath -> UrlPath)
+mkpup :: Show a => String -> (Maybe a -> String -> String)
 mkpup s = \p u -> maybe (noparam u) (flip param u) p
     where
        noparam = mkup s
        param i = mkup s . mkup (show i)
+
+-- ---------------------------------------------------------------------------
+-- ReviewBoard API call list:
+--
+-- accounts/login/$
+-- accounts/logout/$
+-- repositories/$
+-- repositories/(?P<repository_id>[0-9]+)/info/$
+-- users/$
+-- groups/$
+-- groups/(?P<group_name>[A-Za-z0-9_-]+)/star/$
+-- groups/(?P<group_name>[A-Za-z0-9_-]+)/unstar/$
+-- reviewrequests/all/$
+-- reviewrequests/all/count/$
+-- reviewrequests/to/group/(?P<group_name>[A-Za-z0-9_-]+)/$
+-- reviewrequests/to/group/(?P<group_name>[A-Za-z0-9_-]+)/count/$
+-- reviewrequests/to/user/(?P<username>[A-Za-z0-9_-]+)/$
+-- reviewrequests/to/user/(?P<username>[A-Za-z0-9_-]+)/count/$
+-- reviewrequests/to/user/(?P<username>[A-Za-z0-9_-]+)/directly/$
+-- reviewrequests/to/user/(?P<username>[A-Za-z0-9_-]+)/directly/count/$
+-- reviewrequests/from/user/(?P<username>[A-Za-z0-9_-]+)/$
+-- reviewrequests/from/user/(?P<username>[A-Za-z0-9_-]+)/count/$
+-- reviewrequests/new/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/$
+-- reviewrequests/repository/(?P<repository_id>[0-9]+)/changenum/(?P<changenum>[0-9]+)/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/star/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/unstar/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/delete/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/update_from_changenum/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/draft/save/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/draft/discard/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/draft/set/(?P<field_name>[A-Za-z0-9_-]+)/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/draft/set/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/draft/save/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/draft/publish/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/draft/delete/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/draft/comments/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/count/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/comments/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/comments/count/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/replies/draft/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/replies/draft/save/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/replies/draft/discard/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/replies/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/reviews/(?P<review_id>[0-9]+)/replies/count/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/diff/new/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/screenshot/new/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/diff/(?P<diff_revision>[0-9]+)/file/(?P<filediff_id>[0-9]+)/line/(?P<line>[0-9]+)/comments/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/diff/(?P<diff_revision>[0-9]+)-(?P<interdiff_revision>[0-9]+)/file/(?P<filediff_id>[0-9]+)-(?P<interfilediff_id>[0-9]+)/line/(?P<line>[0-9]+)/comments/$
+-- reviewrequests/(?P<review_request_id>[0-9]+)/s/(?P<screenshot_id>[0-9]+)/comments/(?P<w>[0-9]+)x(?P<h>[0-9]+)\+(?P<x>[0-9]+)\+(?P<y>[0-9]+)/$
 

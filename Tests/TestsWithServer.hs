@@ -25,7 +25,6 @@ apiServerTests url user passwd = TestList
 
     -- User tests
     ,  TestLabel "Test userList"            $ runServerTest url user passwd (userListAction user)
-    ,  TestLabel "Test userList search"     $ runServerTest url user passwd (userListSearchAction user)
 
     -- Review request tests
     , TestLabel "Test create/delete rr"     $ runServerTest url user passwd (createDeleteRR user)
@@ -50,21 +49,10 @@ repositoryListAction = do
 userListAction :: String -> RBAction ()
 userListAction user = do
     setErrorHandler error 
-    r <- userList Nothing >>= return . assertOkStatus
+    r <- userList >>= return . assertOkStatus
     let users = R.users r
     assertTrue "User list empty" (length users > 0)
     assertTrue "Login user does not exist" ((length . filter (==user) . map R.username) users > 0)
-    return ()
-
--- Test userList search
-userListSearchAction :: String -> RBAction ()
-userListSearchAction user = do
-    setErrorHandler error 
-    vr <- userList (Just user) >>= return . assertOkStatus
-    assertTrue "User list is not empty" (length (R.users vr) == 1)
-    assertTrue "No login user found" (((R.username . (!!0) . R.users) vr) == user)
-    ir <- userList (Just "not_a_user_2345234") >>= return . assertOkStatus
-    assertTrue "User list is not empty" (length (R.users ir) == 0)
     return ()
 
 -- ---------------------------------------------------------------------------

@@ -1,29 +1,25 @@
 DESCRIPTION
 
-Haskell bindings for ReviewBoard (http://code.google.com/p/reviewboard/)
-
-From the ReviewBoard project page:
-"Review Board is a web-based tool designed to help projects and companies 
- keep track of pending code changes and make code reviews much less painful
- and time-consuming..."
+Haskell bindings for ReviewBoard 
+http://code.google.com/p/reviewboard/
 
 This package contains:
 - The WebAPI binding for ReviewBoard.
 - Two example command line tools mkrr and rbpatch demonstrating the usage 
-  of the bindings. 
-  -  'mkrr' creates a new review requests from the local repository using 
-     svn diff | mkrr -r [reviewers] command.
+  of the bindings: 
+  -  'mkrr' creates a new review requests from the local repository in the form
+     svn diff | mkrr -r [reviewers]
   - 'rbpatch' applies patches to local repository from a review request diff.
   For details see the haddock documentation.
 
-Implemented for ReviewBoard 1.0 Beta (4/25/2008).
+Implemented for ReviewBoard Beta (9/19/2008).
 
 
 REQUIREMENTS
 
 - GHC (http://www.haskell.org/ghc/)
-- HTTP package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/HTTP-3001.0.4)
-- JSON package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/json-0.3.3)
+- Curl package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/curl)
+- JSON package (http://hackage.haskell.org/cgi-bin/hackage-scripts/package/json)
 
 
 INSTALLATION
@@ -38,7 +34,11 @@ INSTALLATION
 
 CHANGES
 
+0.3     - Replaced HTTP with Curl.
+        - Core module cleanup.
+
 0.2.3   - Small fixes, moving to git and github.
+
 0.2.2   - Added support for plain http server requests, httpGet and httpPost
         - Changed get and post request methods to apiGet and apiPost
         - Added rbpatch, an example command line tool that applies patches 

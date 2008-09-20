@@ -33,7 +33,6 @@ module ReviewBoard.Api (
 
     -- Modules
     module ReviewBoard.Core,
-    module ReviewBoard.Browser,
     module ReviewBoard.Request,
 
     -- * API calls
@@ -81,11 +80,7 @@ module ReviewBoard.Api (
 
 import Prelude hiding (all)
 import ReviewBoard.Core
-import ReviewBoard.Browser
 import ReviewBoard.Request
-import Network.URI
-import Network.HTTP hiding (user)
-import qualified Network.Browser as NB
 import Control.Monad.Error
 
 -- ---------------------------------------------------------------------------
@@ -93,9 +88,8 @@ import Control.Monad.Error
 
 -- | Search for a user or list all users if user is Nothing
 --
-userList :: Maybe String -> RBAction RBResponse
-userList (Just u) =  apiGet (users Nothing) [textField "query" u]
-userList Nothing  =  apiGet (users Nothing) []
+userList :: RBAction RBResponse
+userList = apiGet users []
 
 -- | Search for a group or list all group if Nothing
 --
@@ -121,7 +115,7 @@ groupUnstar g = apiGet (groups (Just g) . unstar) []
 -- review request that can be accessed using 'rrId' helper function.
 --
 reviewRequestNew :: String -> Maybe String -> RBAction RBResponse
-reviewRequestNew p (Just u) = apiPost (reviewrequests Nothing . new) $ toFormVar [("repository_path", p), ("submit_as", u)]
+reviewRequestNew p (Just u) = apiPost (reviewrequests Nothing . new) $ [textField "repository_path" p, textField "submit_as" u]
 reviewRequestNew p Nothing  = apiPost (reviewrequests Nothing . new) [textField "repository_path" p]
 
 -- | Delete review request with request @id@.

@@ -16,34 +16,36 @@ module ReviewBoard.Core (
     -- * RB action monad
     RBAction,
     runRBAction,
-    liftBA,
     runRequest,
-    RBRequestType(..),
+    defaultResponseHandler,
+    logout,
 
     -- * RB state 
     RBState(..),
     setErrorHandler,
-    setDebugHTTP,
 
-    -- * Response type
+    -- * Form fields
+    RBRequestType(..),
+    RBRequestMethod(..),
+    Form(..),
+    FormVar(..),
+    textField,
+    checkBox,
+    fileUpload,
+
+    -- * Response types
     RBResponse(..),
     responseToEither,
 
-    -- * Utils
-    mkApiURI,
-    mkHttpURI
-
     ) where
 
-import Network.URI
-import Network.HTTP
-import qualified Network.Browser as NB
-import ReviewBoard.Browser
-import qualified ReviewBoard.Response as R
+import ReviewBoard.Response
 import Control.Monad.Error
 import Control.Monad.State
 import Data.Maybe
 import Text.JSON
+import Network.Curl
+import qualified Data.Map as M
 
 -- ---------------------------------------------------------------------------
 -- Review board action monad
@@ -63,23 +65,16 @@ import Text.JSON
 -- in 'RBState' (default print).
 --
 newtype RBAction a = RBAction
-    { exec :: ErrorT String (StateT RBState NB.BrowserAction) a }
-    deriving (Functor, Monad, MonadState RBState)
-
-instance MonadIO RBAction where
-  liftIO = RBAction . lift . lift . NB.ioAction
-
-instance MonadError String RBAction where
-    throwError = RBAction . throwError
-    l `catchError` h = RBAction $ exec l `catchError` (exec . h)
+    { exec :: ErrorT String (StateT RBState IO) a }
+    deriving (Functor, Monad, MonadIO, MonadState RBState, MonadError String)
 
 -- | Run for 'RBAction', performs a login using provided URL, user 
 -- and password parameters and executes the action. When login fails 
 -- 'runRBAction' returns immediately with an error.
 --
 runRBAction :: String -> String -> String -> RBAction a -> IO (Either String a, RBState)
-runRBAction url u p a = NB.browse . runStateT (runErrorT (exec init)) $ initState url u
-    where init = setDebugHTTP False >> login u p >> a
+runRBAction url u p a = runStateT (runErrorT (exec init)) $ initState url u
+    where init = login u p >> a
 
 -- ---------------------------------------------------------------------------
 -- State type and handler functions
@@ -89,7 +84,7 @@ runRBAction url u p a = NB.browse . runStateT (runErrorT (exec init)) $ initStat
 data RBState = RBState
     { rbUrl        :: String          -- ^ ReviewBoard server URL
     , rbUser       :: String          -- ^ Logged in user
-    , rbSessionId  :: Maybe NB.Cookie -- ^ Session id cookie retrieve from a successful login
+    , rbSessionId  :: Maybe String    -- ^ Session id cookie retrieve from a successful login
     , rbErrHandler :: String -> IO () -- ^ Error handler, for example error or print
     }
 
@@ -104,8 +99,8 @@ initState url user = RBState
 
 -- | Session id setter
 --
-setSessionId :: NB.Cookie -> RBAction ()
-setSessionId sid = get >>= \s -> put s { rbSessionId = Just sid } 
+setSessionId :: Maybe String -> RBAction ()
+setSessionId sid = get >>= \s -> put s { rbSessionId = sid } 
 
 -- | Set error handler used for ReviewBoard error responses.
 --
@@ -113,7 +108,7 @@ setErrorHandler :: (String -> IO ()) -> RBAction ()
 setErrorHandler eh = get >>= \s -> put s { rbErrHandler = eh } 
 
 -- ---------------------------------------------------------------------------
--- Response types
+-- Request types
 
 -- | Type of the request, Web API or default HTTP
 --
@@ -121,6 +116,54 @@ data RBRequestType
     = API
     | HTTP
     deriving Show
+
+-- | Request method
+--
+data RBRequestMethod
+    = GET
+    | POST
+    deriving Show
+
+-- | Typed form variable
+--
+data FormVar = FormVar
+    { fvName :: String          -- ^ variable name
+    , fvValue :: FormVarValue   -- ^ and content
+    } deriving Show
+ 
+-- | Form content value types
+--
+data FormVarValue
+    = TextField String
+    | FileUpload FilePath String
+    | CheckBox Bool
+    deriving Show
+ 
+-- | Typed form
+--
+data Form = Form 
+    { requestType   :: RBRequestType
+    , requestMethod :: RBRequestMethod 
+    , apiURLString  :: URLString 
+    , formVars      :: [FormVar] }
+ 
+-- | Create text field variable
+--
+textField :: String -> String -> FormVar
+textField n v = FormVar n $ TextField v
+ 
+-- | Create checkbox variable
+--
+checkBox :: String -> Bool -> FormVar
+checkBox n v = FormVar n $ CheckBox v
+ 
+-- | Create file upload variable
+--
+fileUpload :: String -> FilePath -> String -> FormVar
+fileUpload n p t = FormVar n $ FileUpload p t
+
+-- ---------------------------------------------------------------------------
+-- Response types
 
 -- | Response type return by every API function
 --
@@ -146,61 +189,94 @@ responseToEither (RBerr s)  = Left s
 -- | The request runner, generates request from provided 'Form' parameter,
 -- executes the requests and handles the response using the handler function.
 --
-runRequest :: RBRequestType -> Form -> (RBResponse -> RBAction a) -> RBAction a
-
--- API request runner
-runRequest rt form f = do
-    s <- get
+runRequest :: Form -> (Form -> CurlResponse -> RBAction a) -> RBAction a
+runRequest form respHandler = do
+    sid <- liftM rbSessionId get
+    rt  <- requestType form
+    rm  <- requestMethod form
 
     -- Execute request
-    (u, r) <- liftBA $ do
-        attachSID $ rbSessionId s
-        formToRequest form >>= NB.request
+    r <- liftIO $ initialize >>= \ h -> do
+            setopt  h (CurlVerbose False)
+            setopt  h rt
+            setopts h rm
+            setopt  h (CurlHttpPost (map toHttpPost $ formVars form))
+            when (isJust sid) $ setopt h (CurlCookie . fromJust $ sid) >> return ()
+            perform_with_response h
 
     -- Check response status
-    case rspCode r of
-        (2,0,0) -> respond rt r s
-        c       -> throwError $ rspReason r ++ " (Code: " ++ show c ++ ")"
+    case respCurlCode r of
+        CurlOK -> respHandler form r
+        c      -> throwError $ respStatusLine r ++ " (Code: " ++ show c ++ ")"
     where
-        -- Add session id to request, if exists
-        attachSID (Just sid) = NB.setCookies [sid]
-        attachSID _          = return ()
+        -- Request type to curl option
+        requestType (Form API _ url _) = mkApiURL url >>= return . CurlURL
+        requestType (Form HTTP _ url _) = mkHttpURL url >>= return . CurlURL  
 
-        -- Respond based on request type
-        respond API r s  = case (decode . rspBody) r of
-                  Ok rsp  -> mkApiResponse rsp >>= handle f (rbErrHandler s)
-                  Error e -> throwError e
-        respond HTTP r s = mkHttpResponse r >>= handle f (rbErrHandler s)
+        -- Request method to curl options
+        requestMethod (Form _ POST url _) = return method_POST
+        requestMethod (Form _ GET  url _) = return method_GET
 
-        -- Run handler on response
-        handle :: (RBResponse -> RBAction a) -> (String -> IO ()) -> RBResponse -> RBAction a
-        handle f _  o@(RBok r)  = f o
-        handle f eh o@(RBerr e) = liftIO (eh e) >> f o
+        -- HttpPost content
+        toHttpPost (FormVar name (TextField value))       = multiformString name value
+        toHttpPost (FormVar name (CheckBox bool))         = multiformString name (show bool)
+        toHttpPost (FormVar name (FileUpload path ctype)) = HttpPost 
+            { postName      = name
+            , content       = ContentFile path
+            , contentType   = Just ctype
+            , extraHeaders  = []
+            , showName      = Nothing } 
+
+-- | Default response handler
+--
+defaultResponseHandler :: Form -> CurlResponse -> RBAction RBResponse
+defaultResponseHandler (Form API  _ _ _) resp = decodeResp resp >>= mkApiResponse
+defaultResponseHandler (Form HTTP _ _ _) resp = mkHttpResponse resp
 
 -- | Login action updates session id cookie from successful login response
 --
 login :: String -> String -> RBAction RBResponse
 login user password = do
-    s   <- get
-    uri <- mkApiURI "accounts/login/"
-    let form = Form POST uri [textField "username" user, textField "password" password]
-    runRequest API form setSessionCookie
+    let form = Form API POST "accounts/login/" [textField "username" user, textField "password" password]
+    runRequest form withCookie
     where
-        setSessionCookie rsp = liftBA NB.getCookies >>= setCookie >> return rsp
-        setCookie []       = throwError "No session cookie received!"
-        setCookie (c:cs)   = setSessionId c
+        withCookie _ resp = (maybe noCookieErr (respond resp)) . getCookie . respHeaders $ resp
+        respond resp sc   = setSessionId (Just sc) >> decodeResp resp >>= mkApiResponse
+        noCookieErr       = throwError "No session cookie received!"
+        getCookie hs      = (M.lookup "Set-Cookie" . M.fromList $ hs) :: Maybe String
+
+-- | Logout and remove session cookie
+--
+logout :: RBAction RBResponse
+logout = do
+    let form = Form API POST "accounts/logout/" []
+    runRequest form withCookie
+    where
+        withCookie _ resp = setSessionId Nothing >> decodeResp resp >>= mkApiResponse
+
+-- | Decode response body
+--
+decodeResp = (either throwError return) . resultToEither . decode . respBody
 
 -- | Create API request RBResponse
 --
 mkApiResponse :: JSValue -> RBAction RBResponse
 mkApiResponse v = do
-    stat <- (return $ R.stat v) `catchError` (\_ -> return "")
-    case stat of
-        "ok"   -> return $ RBok v
-        "fail" -> do
-            err <- (return $ (R.msg . R.err)  v) `catchError` (\_ -> return "No error message received")
+    erh <- liftM rbErrHandler get
+    stat <- (return $ stat v) `catchError` (\_ -> return "")
+    apiResp stat >>= handle erh
+    where
+        apiResp "ok"   = return $ RBok v
+        apiResp "fail" = do
+            err <- (return $ (msg . err)  v) `catchError` (\_ -> return "No error message received")
             return $ RBerr (err ++ " (" ++ encode v ++ ")")
-        _      -> return $ RBerr "Invalid response, not status received"
+        apiResp _      = return $ RBerr "Invalid response, not status received"
+
+        -- Run handler on response
+        handle :: (String -> IO ()) -> RBResponse -> RBAction RBResponse
+        handle _ o@(RBok r) = return o
+        handle eh o@(RBerr e) = liftIO (eh e) >> return o
+
 
 -- | Create Http request RBResponse
 -- The successful response returns a JSObject of the from:
@@ -210,12 +286,12 @@ mkApiResponse v = do
 --          ],
 --   body : "body content" }
 --
-mkHttpResponse :: Response -> RBAction RBResponse
+mkHttpResponse :: CurlResponse -> RBAction RBResponse
 mkHttpResponse r = return $ RBok . JSObject . toJSObject $
-      [ ("head", mkHead (rspHeaders r))
-      , ("body", mkBody (rspBody r)) ]
+      [ ("head", mkHead (respHeaders r))
+      , ("body", mkBody (respBody r)) ]
     where
-        mkHead = JSArray . map (\(Header n v) -> JSObject . toJSObject $
+        mkHead = JSArray . map (\(n, v) -> JSObject . toJSObject $
             [ ("name", JSString . toJSString . show $ n)
             , ("value", JSString . toJSString $ v)])
         mkBody = JSString . toJSString
@@ -223,32 +299,17 @@ mkHttpResponse r = return $ RBok . JSObject . toJSObject $
 -- ---------------------------------------------------------------------------
 -- Util functions
 
--- | Convenient lift for BrowserActions
---
-liftBA :: NB.BrowserAction a -> RBAction a
-liftBA = RBAction . lift . lift
-
 -- | Create ReviewBoard specific URI for a Web API call URL.
 --
-mkApiURI :: String -> RBAction URI
-mkApiURI apiUrl = mkURI ("/api/json/" ++ apiUrl)
+mkApiURL :: String -> RBAction URLString
+mkApiURL apiUrl = mkURL ("/api/json/" ++ apiUrl)
 
 -- | Create ReviewBoard specific URI for direct HTTP request.
 --
-mkHttpURI = mkURI
+mkHttpURL = mkURL
 
 -- | General URI maker
 --
-mkURI :: String -> RBAction URI
-mkURI url = do
-    s <- get
-    case parseURI (rbUrl s ++ url) of
-        Just u  -> return u
-        Nothing -> throwError $ "Invalid url: " ++ url
-
--- | Enable/disable debug output for Browser module
---
-setDebugHTTP :: Bool -> RBAction ()
-setDebugHTTP True  = liftBA $ NB.setOutHandler putStrLn
-setDebugHTTP False = liftBA $ NB.setOutHandler (\_ -> return())
+mkURL :: String -> RBAction URLString
+mkURL url = liftM ((++url) . rbUrl) get
 

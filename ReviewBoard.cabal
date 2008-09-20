@@ -1,5 +1,5 @@
 Name:           	ReviewBoard
-Version:        	0.2.3
+Version:        	0.3
 Synopsis:			Haskell bindings to ReviewBoard
 Description:    	Haskell bindings to ReviewBoard (<http://code.google.com/p/reviewboard/>).
 Author:         	Adam Smyczek
@@ -17,12 +17,11 @@ Library
   Exposed-modules: 
                 ReviewBoard.Api
                 ReviewBoard.Core
-                ReviewBoard.Browser
                 ReviewBoard.Response
                 ReviewBoard.Request
   Build-Depends:
-                base, mtl, random,
-                network, HTTP, json
+                base, mtl, random, containers,
+                network, curl, json
 
 Executable mkrr
   main-is:
@@ -30,12 +29,11 @@ Executable mkrr
   other-modules:
                 ReviewBoard.Api
                 ReviewBoard.Core
-                ReviewBoard.Browser
                 ReviewBoard.Response
                 ReviewBoard.Request
   Build-Depends:
                 base, mtl, random, directory,
-                network, HTTP, json
+                network, curl, json
 
 Executable rbpatch
   main-is:
@@ -43,10 +41,9 @@ Executable rbpatch
   other-modules:
                 ReviewBoard.Api
                 ReviewBoard.Core
-                ReviewBoard.Browser
                 ReviewBoard.Response
                 ReviewBoard.Request
   Build-Depends:
                 base, mtl, random, directory, process,
-                network, HTTP, json
+                network, curl, json
 

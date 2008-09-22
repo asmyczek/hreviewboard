@@ -1,7 +1,7 @@
 Name:           	ReviewBoard
 Version:        	0.3
-Synopsis:			Haskell bindings to ReviewBoard
-Description:    	Haskell bindings to ReviewBoard (<http://code.google.com/p/reviewboard/>).
+Synopsis:			Haskell bindings for ReviewBoard
+Description:    	Haskell bindings for ReviewBoard (<http://code.google.com/p/reviewboard/>).
 Author:         	Adam Smyczek
 Maintainer:     	<adam.smyczek@gmail.com>
 Category:       	Development

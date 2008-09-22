@@ -18,7 +18,6 @@ module ReviewBoard.Core (
     runRBAction,
     runRequest,
     defaultResponseHandler,
-    logout,
 
     -- * RB state 
     RBState(..),
@@ -37,6 +36,9 @@ module ReviewBoard.Core (
     RBResponse(..),
     responseToEither,
 
+    -- * Common functions
+    logout,
+
     ) where
 
 import ReviewBoard.Response
@@ -53,16 +55,16 @@ import qualified Data.Map as M
 -- | The action monad, a state with error handler.
 --
 -- 'RBAction' represents one ReviewBoard session that handles multiple API calls.
--- The RBAction runner 'runRBAction' performs a login into the ReviewBoard server 
+-- The RBAction runner 'runRBAction' performs a login to the ReviewBoard server 
 -- and initializes the session.  All session related parameters are stored in 
 -- the 'RBState' of the action.
 --
 -- Errors are handled in two ways:
 --
--- * Network related error are immediately thrown using ErrorT throwError.
+-- * Network related errors are immediately thrown using ErrorT throwError.
 --
--- * ReviewRequest response errors are handled using the error handler defined 
--- in 'RBState' (default print).
+-- * ReviewBoard response errors are handled using the error handler defined 
+-- in 'RBState' (default handler is print).
 --
 newtype RBAction a = RBAction
     { exec :: ErrorT String (StateT RBState IO) a }
@@ -79,7 +81,7 @@ runRBAction url u p a = runStateT (runErrorT (exec init)) $ initState url u
 -- ---------------------------------------------------------------------------
 -- State type and handler functions
 
--- | RB action state containing session related information.
+-- | RB action state contains session related information.
 --
 data RBState = RBState
     { rbUrl        :: String          -- ^ ReviewBoard server URL
@@ -110,42 +112,42 @@ setErrorHandler eh = get >>= \s -> put s { rbErrHandler = eh }
 -- ---------------------------------------------------------------------------
 -- Request types
 
--- | Type of the request, Web API or default HTTP
+-- | Type of the request
 --
 data RBRequestType
-    = API
-    | HTTP
+    = API               -- ^ Default Json API request 
+    | HTTP              -- ^ HTTP request currently used to publish a review request
     deriving Show
 
--- | Request method
+-- | HTTP request method
 --
 data RBRequestMethod
-    = GET
-    | POST
+    = GET               -- ^ GET
+    | POST              -- ^ and POST
     deriving Show
 
 -- | Typed form variable
 --
 data FormVar = FormVar
     { fvName :: String          -- ^ variable name
-    , fvValue :: FormVarValue   -- ^ and content
+    , fvValue :: FormVarValue   -- ^ and content type
     } deriving Show
  
 -- | Form content value types
 --
 data FormVarValue
-    = TextField String
-    | FileUpload FilePath String
-    | CheckBox Bool
+    = TextField String              -- ^ A text field with String value
+    | FileUpload FilePath String    -- ^ File upload referencing the file path and file name
+    | CheckBox Bool                 -- ^ Boolean field, a check box
     deriving Show
  
--- | Typed form
+-- | Form type
 --
 data Form = Form 
-    { requestType   :: RBRequestType
-    , requestMethod :: RBRequestMethod 
-    , apiURLString  :: URLString 
-    , formVars      :: [FormVar] }
+    { requestType   :: RBRequestType    -- ^ the request type API or HTTP
+    , requestMethod :: RBRequestMethod  -- ^ http method, GET or POST
+    , apiURLString  :: URLString        -- ^ API sub-url e.g. 'repositories'
+    , formVars      :: [FormVar] }      -- ^ Form fields
  
 -- | Create text field variable
 --
@@ -168,16 +170,15 @@ fileUpload n p t = FormVar n $ FileUpload p t
 -- | Response type return by every API function
 --
 data RBResponse
-    = RBok  JSValue -- ^ Successful response, contains JSON response object
-    | RBerr String  -- ^ Response error including error message including 
-                    --   encoded response
+    = RBok  JSValue -- ^ Successful response returns the JSON response object
+    | RBerr String  -- ^ Response error
     deriving Eq
 
 instance Show RBResponse where
    show (RBok r)    = "Ok: " ++ encode r
    show (RBerr e)   = "Error: " ++ e
 
--- | Convenient response converter
+-- | Convenient response to either converter
 --
 responseToEither :: RBResponse -> Either String JSValue
 responseToEither (RBok r)   = Right r
@@ -186,7 +187,7 @@ responseToEither (RBerr s)  = Left s
 -- ---------------------------------------------------------------------------
 -- Request and response handling
 
--- | The request runner, generates request from provided 'Form' parameter,
+-- | The request runner, generates request from provided 'Form' parameters,
 -- executes the requests and handles the response using the handler function.
 --
 runRequest :: Form -> (Form -> CurlResponse -> RBAction a) -> RBAction a
@@ -227,7 +228,7 @@ runRequest form respHandler = do
             , extraHeaders  = []
             , showName      = Nothing } 
 
--- | Default response handler
+-- | Default response handler returns the RBResponse type
 --
 defaultResponseHandler :: Form -> CurlResponse -> RBAction RBResponse
 defaultResponseHandler (Form API  _ _ _) resp = decodeResp resp >>= mkApiResponse
@@ -258,7 +259,7 @@ logout = do
 --
 decodeResp = (either throwError return) . resultToEither . decode . respBody
 
--- | Create API request RBResponse
+-- | Create response for an API request
 --
 mkApiResponse :: JSValue -> RBAction RBResponse
 mkApiResponse v = do
@@ -278,7 +279,7 @@ mkApiResponse v = do
         handle eh o@(RBerr e) = liftIO (eh e) >> return o
 
 
--- | Create Http request RBResponse
+-- | Create response for an HTTP request
 -- The successful response returns a JSObject of the from:
 -- { head : [
 --              { name = "header name"
@@ -308,7 +309,7 @@ mkApiURL apiUrl = mkURL ("/api/json/" ++ apiUrl)
 --
 mkHttpURL = mkURL
 
--- | General URI maker
+-- | General URI maker.
 --
 mkURL :: String -> RBAction URLString
 mkURL url = liftM ((++url) . rbUrl) get

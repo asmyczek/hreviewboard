@@ -36,6 +36,7 @@ CHANGES
 
 0.3     - Replaced HTTP with Curl.
         - Core module cleanup.
+        - Updated to GHC 6.10.1 and latest libs
 
 0.2.3   - Small fixes, moving to git and github.
 
